@@ -1,200 +1,263 @@
-# AGENTS.md - AI Coding Agent Reference
+# AGENTS.md — AI Agent Instructions for PraktikFinder
 
-This file provides essential information for AI coding agents working on this project. It contains project-specific details, conventions, and guidelines that complement the README.
-
----
-
-## Project Overview
-
-**Next.js Admin Dashboard Starter** is a production-ready admin dashboard template built with:
-
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript 5.7
-- **Styling**: Tailwind CSS v4
-- **UI Components**: shadcn/ui (New York style)
-- **Authentication**: Clerk (with Organizations/Billing support)
-- **Error Tracking**: Sentry
-- **Package Manager**: Bun (preferred) or npm
-
-The project follows a feature-based folder structure designed for scalability in SaaS applications, internal tools, and admin panels.
+> Senast uppdaterad: 2026-02-13
+> Läs hela detta dokument innan du gör NÅGON ändring.
 
 ---
 
-## Technology Stack Details
+## 1. Projektidentitet
 
-### Core Framework & Runtime
-- Next.js 16.0.10 with App Router
-- React 19.2.0
-- TypeScript 5.7.2 with strict mode enabled
+**PraktikFinder** är en svensk matchningsplattform för praktikplatser. Studenter matchas med företag baserat på stad, praktiktyp (PRAO/APL/LIA/praktik), bransch och kompetenser. Skolor kan importera/hantera studenter. Admins övervakar hela ekosystemet.
 
-### Styling & UI
-- Tailwind CSS v4 (using `@import 'tailwindcss'` syntax)
-- PostCSS with `@tailwindcss/postcss` plugin
-- shadcn/ui component library (Radix UI primitives)
-- CSS custom properties for theming (OKLCH color format)
-
-### State Management
-- Zustand 5.x for global state
-- Nuqs for URL search params state management
-- React Hook Form + Zod for form handling
-
-### Authentication & Authorization
-- Clerk for authentication and user management
-- Clerk Organizations for multi-tenant workspaces
-- Clerk Billing for subscription management (B2B)
-- Client-side RBAC for navigation visibility
-
-### Data & APIs
-- TanStack Table for data tables
-- Recharts for analytics/charts
-- Mock API utilities in `src/constants/mock-api.ts`
-
-### Development Tools
-- ESLint 8.x with Next.js core-web-vitals config
-- Prettier 3.x with prettier-plugin-tailwindcss
-- Husky for git hooks
-- lint-staged for pre-commit formatting
+**Språk i UI**: Svenska (menyer, labels, meddelanden, knappar). Kodkommentarer & variabelnamn: engelska.
 
 ---
 
-## Project Structure
+## 2. Teknikstack — exakta versioner
+
+| Lager | Teknologi | Version |
+|---|---|---|
+| Framework | Next.js (App Router) | 16.0.10 |
+| Runtime | React | 19.2.0 |
+| Språk | TypeScript (strict mode) | 5.7.2 |
+| CSS | Tailwind CSS v4 | 4.x (`@import 'tailwindcss'`) |
+| UI-bibliotek | shadcn/ui (New York style) | Radix-baserat |
+| Autentisering | Clerk (+ Organizations + Billing) | 6.x |
+| Databas | Appwrite (med Supabase-kompatibelt query-lager) | 18.x / node-appwrite 14.x |
+| E-post | Resend | 6.x |
+| AI Chat | NVIDIA API (Mistral) → fallback: keyword-baserat | — |
+| Felhantering | Sentry | 9.x |
+| State | Zustand 5.x (global), Nuqs (URL-state), React Hook Form + Zod (formulär) |
+| Tabeller | TanStack Table | 8.x |
+| Grafer | Recharts | 2.x |
+| Drag & Drop | dnd-kit | 6.x |
+| Pakethanterare | Bun (föredras) eller npm | — |
+
+---
+
+## 3. Mappstruktur & konventioner
 
 ```
-/src
-├── app/                    # Next.js App Router
-│   ├── auth/              # Authentication routes (sign-in, sign-up)
-│   ├── dashboard/         # Dashboard routes
-│   │   ├── overview/      # Parallel routes (@area_stats, @bar_stats, etc.)
-│   │   ├── product/       # Product management pages
-│   │   ├── kanban/        # Kanban board page
-│   │   ├── workspaces/    # Organization management
-│   │   ├── billing/       # Subscription billing
-│   │   ├── exclusive/     # Pro plan feature example
-│   │   └── profile/       # User profile
-│   ├── api/               # API routes (if any)
-│   ├── layout.tsx         # Root layout with providers
-│   ├── page.tsx           # Landing page
-│   ├── global-error.tsx   # Sentry-integrated error boundary
-│   └── not-found.tsx      # 404 page
+src/
+├── app/                    # Next.js App Router (routes)
+│   ├── api/                # API-routes (serverless endpoints)
+│   │   ├── admin/          # Admin-only: stats, export, matches
+│   │   ├── chat/           # AI chatbot
+│   │   ├── companies/      # CRUD + claim
+│   │   ├── email/          # Resend send + webhooks
+│   │   ├── matches/        # CRUD + bulk
+│   │   ├── profiles/       # Användarens profil
+│   │   ├── schools/        # CRUD + students
+│   │   ├── students/       # CRUD + import + match
+│   │   ├── waitlist/       # Väntelista
+│   │   └── webhooks/       # Clerk webhooks (user.created/updated/deleted)
+│   ├── auth/               # Clerk login/signup-sidor
+│   ├── dashboard/          # Dashboard med sidebar-layout
+│   │   ├── overview/       # Parallel routes: @area_stats, @bar_stats, @pie_stats, @sales
+│   │   ├── product/        # Student-lista (legacy-namn, avser "Studenter")
+│   │   ├── kanban/         # Matchnings-board (dnd-kit)
+│   │   ├── profile/        # Clerk-profil ([[...profile]])
+│   │   ├── workspaces/     # Clerk Organizations
+│   │   ├── billing/        # Clerk Billing
+│   │   └── exclusive/      # Proplan-exklusivt
+│   ├── about/              # Om-sida
+│   ├── privacy-policy/     # Integritetspolicy
+│   └── terms-of-service/   # Användarvillkor
+│
+├── features/               # Affärslogik grupperad per feature
+│   ├── auth/               # Auth-formulär (sign-in, sign-up)
+│   ├── overview/           # Dashboard-grafer (area, bar, pie, recent-sales)
+│   ├── products/           # Student-tabell med cell-actions
+│   ├── kanban/             # Kanban-board (Zustand store + dnd-kit)
+│   └── profile/            # Profil-formulär + schema
 │
 ├── components/
-│   ├── ui/                # shadcn/ui components (50+ components)
-│   ├── layout/            # Layout components (sidebar, header, etc.)
-│   ├── forms/             # Form field wrappers
-│   ├── themes/            # Theme system components
-│   ├── kbar/              # Command+K search bar
-│   ├── icons.tsx          # Icon registry
+│   ├── ui/                 # shadcn/ui-komponenter — REDIGERA INTE DIREKT
+│   ├── layout/             # app-sidebar, header, providers, info-sidebar
+│   ├── forms/              # Generiska formulärkomponenter
+│   ├── themes/             # Temasystem (6 inbyggda teman)
+│   ├── kbar/               # Cmd+K sökbar
+│   ├── ai-chatbot.tsx      # AI-chatbot widget
+│   ├── icons.tsx           # Ikonregistret (Tabler icons)
+│   ├── nav-main.tsx        # Sidebar-navigation
+│   ├── org-switcher.tsx    # Clerk Organization-switcher
 │   └── ...
 │
-├── features/              # Feature-based modules
-│   ├── auth/              # Authentication components
-│   ├── overview/          # Dashboard analytics
-│   ├── products/          # Product management
-│   ├── kanban/            # Kanban board with dnd-kit
-│   └── profile/           # Profile management
+├── config/
+│   ├── nav-config.ts       # Navigation-items med RBAC-access
+│   ├── data-table.ts       # Data-tabell-konfiguration
+│   └── infoconfig.ts       # Sidebar info-panel config
 │
-├── config/                # Configuration files
-│   ├── nav-config.ts      # Navigation with RBAC
+├── hooks/                  # Custom hooks
+│   ├── use-nav.ts          # RBAC-filtrering av navigation (client-side)
+│   ├── use-data-table.ts   # TanStack Table-integration
+│   ├── use-multistep-form.tsx
 │   └── ...
 │
-├── hooks/                 # Custom React hooks
-│   ├── use-nav.ts         # RBAC navigation filtering
-│   ├── use-data-table.ts  # Data table state
-│   └── ...
+├── lib/
+│   ├── appwrite/
+│   │   ├── server.ts       # HUVUDFIL: Supabase-kompatibelt query-lager över Appwrite
+│   │   └── client.ts       # Browser-klient (Account, Databases)
+│   ├── utils.ts            # cn() + formatBytes()
+│   ├── data-table.ts       # Hjälpfunktioner för tabeller
+│   ├── format.ts           # Datumformatering etc.
+│   ├── parsers.ts          # URL searchparam-parsers
+│   └── searchparams.ts     # Sökvarshjälpare
 │
-├── lib/                   # Utility functions
-│   ├── utils.ts           # cn() and formatters
-│   ├── searchparams.ts    # Search param utilities
-│   └── ...
+├── types/
+│   ├── index.ts            # NavItem, PermissionCheck
+│   ├── database.ts         # Profile, Student, Company, School, Match, Database
+│   ├── data-table.ts       # Tabelltyper
+│   └── base-form.ts        # Formulärbastyper
 │
-├── types/                 # TypeScript type definitions
-│   └── index.ts           # Core types (NavItem, etc.)
+├── constants/
+│   ├── data.ts             # Mockdata (recentMatches etc.) — SVENSKA namn
+│   └── mock-api.ts         # Fake product-API (legacy)
 │
-└── styles/                # Global styles
-    ├── globals.css        # Tailwind imports + view transitions
-    ├── theme.css          # Theme imports
-    └── themes/            # Individual theme files
-
-/docs                      # Documentation
-│   ├── clerk_setup.md     # Clerk configuration guide
-│   ├── nav-rbac.md        # Navigation RBAC documentation
-│   └── themes.md          # Theme customization guide
-
-/__CLEANUP__               # Feature removal scripts
-    ├── scripts/           # Cleanup automation
-    └── clerk/             # Templates after Clerk removal
+└── styles/
+    ├── globals.css          # Tailwind-import + view transitions
+    ├── theme.css            # Tema-importer
+    └── themes/              # Individuella .css per tema (6 st)
 ```
 
 ---
 
-## Build & Development Commands
+## 4. Roller & behörighetsmodell
 
+Fyra roller: `student`, `company`, `school`, `admin`
+
+| Resurs | Student | Företag | Skola | Admin |
+|---|---|---|---|---|
+| Egen profil | CRUD | CRUD | CRUD | CRUD |
+| Se matchningar | Egna | Egna | Alla (sin skola) | Alla |
+| Visa intresse | ✅ | ✅ | ❌ | ✅ |
+| Se alla studenter | ❌ | Matchade | Skolans | Alla |
+| Se alla företag | ✅ | ❌ | ✅ | Alla |
+| Importera studenter (CSV) | ❌ | ❌ | ✅ | ✅ |
+| Manuell matchning | ❌ | ❌ | ✅ | ✅ |
+| Exportera data | ❌ | ❌ | ✅ | ✅ |
+| Systemkonfiguration | ❌ | ❌ | ❌ | ✅ |
+| Skicka email (Resend) | ❌ | ❌ | ❌ | ✅ |
+
+**Rollkontroll sker i:**
+- API-routes: `auth()` → profiltabell `role`-fält (server-side)
+- Navigation: `useFilteredNavItems()` hook med Clerk `access`-properties (client-side, UX only)
+- Sidor: Clerk `<Protect>` eller `has()` för plan/feature-gating
+
+---
+
+## 5. Databasarkitektur (Appwrite)
+
+### Supabase-kompatibelt lager
+`src/lib/appwrite/server.ts` exponerar ett Supabase-liknande API:
+```ts
+const supabase = await createClient();
+const { data, error } = await supabase
+  .from('students')
+  .select('*, schools(name)')
+  .eq('city', 'Stockholm')
+  .order('created_at', { ascending: false })
+  .limit(10);
+```
+Stöder: `.select()`, `.insert()`, `.update()`, `.delete()`, `.upsert()`, `.eq()`, `.neq()`, `.ilike()`, `.gt()`, `.gte()`, `.lte()`, `.in()`, `.range()`, `.limit()`, `.order()`, `.single()`, `{ count: 'exact' }`.
+
+**ILIKE-filter kräver fulltext-index i Appwrite.**
+
+### Collections (7 st)
+| Collection | Nyckelattribut |
+|---|---|
+| `profiles` | id (=Clerk userId), role, email, full_name, avatar_url |
+| `students` | user_id, school_id, full_name, email, city, practice_type, program, status |
+| `companies` | user_id, name, org_number, city, industry, accepts_prao/apl/lia/praktik, available_spots, is_claimed, is_verified |
+| `schools` | user_id, name, school_code, city, contact_email, is_verified |
+| `matches` | student_id, company_id, status, match_score, matched_by |
+| `waitlist` | email, role, company_name, school_name, city |
+| `email_logs` | recipient, template, status |
+
+### Setup-script
 ```bash
-# Install dependencies
-bun install
+npx tsx scripts/setup-appwrite.ts
+```
+Skapar databas, collections, attribut och fulltext-index.
 
-# Development server
-bun run dev          # Starts at http://localhost:3000
+---
 
-# Build for production
-bun run build
+## 6. API-routes — komplett referens
 
-# Start production server
-bun run start
+| Endpoint | Metoder | Auth | Roll | Beskrivning |
+|---|---|---|---|---|
+| `/api/profiles` | GET, POST, PATCH | Clerk | Alla | Aktuell användares profil |
+| `/api/students` | GET, POST | Clerk | Admin/skola/företag* | Lista/skapa studenter |
+| `/api/students/[id]` | GET, PATCH, DELETE | Clerk | Varies | Enskild student |
+| `/api/students/import` | POST | Clerk | Skola/admin | CSV-import av studenter |
+| `/api/students/match` | POST | Clerk | Alla | Hitta matchningar för student |
+| `/api/companies` | GET, POST | Clerk | Alla | Lista/skapa företag |
+| `/api/companies/[id]` | GET, PATCH, DELETE | Clerk | Varies | Enskilt företag |
+| `/api/companies/claim` | POST | Clerk | Alla | Claima förregistrerat företag |
+| `/api/schools` | GET, POST | Clerk | Alla | Lista/skapa skolor |
+| `/api/schools/[id]` | GET, PATCH, DELETE | Clerk | Varies | Enskild skola |
+| `/api/schools/[id]/students` | GET, POST | Clerk | Skola/admin | Studenter på skolan |
+| `/api/matches` | GET, POST | Clerk | Alla | Lista/skapa matchningar |
+| `/api/matches/[id]` | GET, PATCH, DELETE | Clerk | Varies | Enskild matchning |
+| `/api/matches/bulk` | POST | Clerk | Admin | Massåtgärder |
+| `/api/admin/stats` | GET | Clerk | Admin | Dashboard-statistik |
+| `/api/admin/export` | GET | Clerk | Admin | Exportera data (JSON/CSV) |
+| `/api/admin/matches` | GET, POST, PATCH | Clerk | Admin | Admin-matchningshantering |
+| `/api/chat` | POST | Clerk | Alla | AI-chatbot (NVIDIA/fallback) |
+| `/api/email/send` | POST | Clerk | Admin | Skicka e-post (Resend) |
+| `/api/email/webhooks` | POST | — | Resend webhook | E-postleveransstatus |
+| `/api/waitlist` | GET, POST | Valfri | Alla | Väntelista |
+| `/api/webhooks/clerk` | POST | Svix | Clerk | Synk: user.created/updated/deleted |
 
-# Linting
-bun run lint         # Run ESLint
-bun run lint:fix     # Fix ESLint issues and format
-bun run lint:strict  # Zero warnings tolerance
+**Mönster i alla routes:**
+```ts
+import { createClient } from '@/lib/appwrite/server';
+import { auth } from '@clerk/nextjs/server';
 
-# Formatting
-bun run format       # Format with Prettier
-bun run format:check # Check formatting
-
-# Git hooks
-bun run prepare      # Install Husky hooks
+export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const supabase = await createClient();
+  // ... query med supabase-kompatibelt API
+}
 ```
 
 ---
 
-## Environment Configuration
+## 7. Matchningsalgoritm
 
-Copy `env.example.txt` to `.env.local` and configure:
+Poängsystem (0–100):
+- **Stad** (40p): Exakt match
+- **Praktiktyp** (35p): Student practice_type vs company accepts_X
+- **Bransch** (25p): Student preferred_industries ∩ company industry
 
-### Required for Authentication (Clerk)
-```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
-CLERK_SECRET_KEY=sk_...
+Tröskel: `min_score = 50` (konfigurerbart)
 
-# Redirect URLs
-NEXT_PUBLIC_CLERK_SIGN_IN_URL="/auth/sign-in"
-NEXT_PUBLIC_CLERK_SIGN_UP_URL="/auth/sign-up"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard/overview"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard/overview"
-```
-
-### Optional for Error Tracking (Sentry)
-```env
-NEXT_PUBLIC_SENTRY_DSN=https://...@....ingest.sentry.io/...
-NEXT_PUBLIC_SENTRY_ORG=your-org
-NEXT_PUBLIC_SENTRY_PROJECT=your-project
-SENTRY_AUTH_TOKEN=sntrys_...
-NEXT_PUBLIC_SENTRY_DISABLED="false"  # Set to "true" to disable in dev
-```
-
-**Note**: Clerk supports "keyless mode" - the app works without API keys for initial development.
+Implementerad i: `/api/students/match/route.ts`
 
 ---
 
-## Code Style Guidelines
+## 8. Kodkonventioner — STRIKT
 
 ### TypeScript
-- Strict mode enabled
-- Use explicit return types for public functions
-- Prefer interface over type for object definitions
-- Use `@/*` alias for imports from src
+- **Strict mode** — inga `any`; explicit returttyper på publika funktioner
+- **Interface framför type** för objekt
+- **Imports**: `@/*` = `src/*`, `~/*` = `public/*`
+- Alla databastyper i `src/types/database.ts`
+- Alla nav-typer i `src/types/index.ts`
 
-### Formatting (Prettier)
+### Komponenter
+- **Server Components by default** — lägg BARA till `'use client'` vid browser-API:er/hooks
+- Funktionsdeklarationer: `function ComponentName() {}` (inte arrow)
+- Props: `interface ComponentNameProps {}`
+- Klassnamn: ALLTID `cn()` från `@/lib/utils` — ALDRIG strängkonkatenering
+- **REDIGERA INTE `src/components/ui/`** — extenda istället
+
+### Formulär
+- React Hook Form + Zod för validering
+- Generiska fältkomponenter i `src/components/forms/`
+
+### Formattering (Prettier)
 ```json
 {
   "singleQuote": true,
@@ -206,282 +269,143 @@ NEXT_PUBLIC_SENTRY_DISABLED="false"  # Set to "true" to disable in dev
 }
 ```
 
-### ESLint Rules
-- `@typescript-eslint/no-unused-vars`: warn
-- `no-console`: warn
-- `react-hooks/exhaustive-deps`: warn
-- `import/no-unresolved`: off (handled by TypeScript)
-
-### Component Conventions
-- Use function declarations for components: `function ComponentName() {}`
-- Props interface named `{ComponentName}Props`
-- shadcn/ui components use `cn()` utility for class merging
-- Server components by default, `'use client'` only when needed
-
 ---
 
-## Theming System
+## 9. Autentisering & sessioner
 
-The project uses a sophisticated multi-theme system with 6 built-in themes:
+- **Clerk** hanterar all autentisering
+- Webhooks via Svix (CLERK_WEBHOOK_SECRET) synkar user → `profiles`-collection
+- Roll sätts via `public_metadata.role` vid registrering (default: `'student'`)
+- Keyless mode fungerar utan API-nycklar i development
 
-- `vercel` (default)
-- `claude`
-- `neobrutualism`
-- `supabase`
-- `mono`
-- `notebook`
+### Skyddade routes
+```ts
+// Server-side
+const { userId } = await auth();
+if (!userId) redirect('/auth/sign-in');
 
-### Theme Files
-- CSS files: `src/styles/themes/{theme-name}.css`
-- Theme registry: `src/components/themes/theme.config.ts`
-- Font config: `src/components/themes/font.config.ts`
-- Active theme provider: `src/components/themes/active-theme.tsx`
-
-### Adding a New Theme
-1. Create `src/styles/themes/your-theme.css` with `[data-theme='your-theme']` selector
-2. Import in `src/styles/theme.css`
-3. Add to `THEMES` array in `src/components/themes/theme.config.ts`
-4. (Optional) Add fonts in `font.config.ts`
-5. (Optional) Set as default in `theme.config.ts`
-
-See `docs/themes.md` for detailed theming guide.
-
----
-
-## Navigation & RBAC System
-
-### Navigation Configuration
-Navigation is defined in `src/config/nav-config.ts`:
-
-```typescript
-export const navItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    url: '/dashboard/overview',
-    icon: 'dashboard',
-    shortcut: ['d', 'd'],
-    access: { requireOrg: true }  // RBAC check
-  }
-];
-```
-
-### Access Control Properties
-- `requireOrg: boolean` - Requires active organization
-- `permission: string` - Requires specific permission
-- `role: string` - Requires specific role
-- `plan: string` - Requires specific subscription plan
-- `feature: string` - Requires specific feature
-
-### Client-Side Filtering
-The `useFilteredNavItems()` hook in `src/hooks/use-nav.ts` filters navigation client-side using Clerk's `useOrganization()` and `useUser()` hooks. This is for UX only - actual security checks must happen server-side.
-
----
-
-## Authentication Patterns
-
-### Protected Routes
-Dashboard routes use Clerk's middleware pattern. Pages that require organization:
-
-```tsx
-import { auth } from '@clerk/nextjs';
-import { redirect } from 'next/navigation';
-
-export default async function Page() {
-  const { orgId } = await auth();
-  if (!orgId) redirect('/dashboard/workspaces');
-  // ...
-}
-```
-
-### Plan/Feature Protection
-Use Clerk's `<Protect>` component for client-side:
-
-```tsx
-import { Protect } from '@clerk/nextjs';
-
-<Protect plan="pro" fallback={<UpgradePrompt />}>
-  <PremiumContent />
-</Protect>
-```
-
-Use `has()` function for server-side checks:
-
-```tsx
-import { auth } from '@clerk/nextjs';
-
-const { has } = await auth();
-const hasFeature = has({ feature: 'premium_access' });
+// Roll-check
+const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single();
+if (profile.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 ```
 
 ---
 
-## Data Fetching Patterns
+## 10. Externa tjänster
 
-### Server Components (Default)
-Fetch data directly in async components:
-
-```tsx
-export default async function ProductPage() {
-  const products = await getProducts(); // Your data fetch
-  return <ProductTable data={products} />;
-}
-```
-
-### URL State Management
-Use `nuqs` for search params state:
-
-```tsx
-import { useQueryState } from 'nuqs';
-
-const [search, setSearch] = useQueryState('search');
-```
-
-### Data Tables
-Tables use TanStack Table with server-side filtering:
-- Column definitions in `features/*/components/*-tables/columns.tsx`
-- Table component in `src/components/ui/table/data-table.tsx`
-- Filter parsers in `src/lib/parsers.ts`
+| Tjänst | Syfte | Env-variabel |
+|---|---|---|
+| Clerk | Auth, Users, Organizations, Billing | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` |
+| Appwrite | Databas (collections), ev. Storage | `NEXT_PUBLIC_APPWRITE_ENDPOINT`, `NEXT_PUBLIC_APPWRITE_PROJECT_ID`, `APPWRITE_API_KEY`, `APPWRITE_DATABASE_ID` |
+| Resend | E-postutskick | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` |
+| NVIDIA API | AI-chat (Mistral LLM) | `NVIDIA_API_KEY` |
+| Sentry | Felhantering & monitoring | `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN` |
 
 ---
 
-## Error Handling & Monitoring
+## 11. Feature-moduler — var lägger man ny kod?
 
-### Sentry Integration
-Sentry is configured for both client and server:
-- Client config: `src/instrumentation-client.ts`
-- Server config: `src/instrumentation.ts`
-- Global error: `src/app/global-error.tsx`
+### Ny sida
+1. Skapa route: `src/app/dashboard/ny-sida/page.tsx`
+2. Lägg till i navigation: `src/config/nav-config.ts`
+3. Feature-logik: `src/features/ny-feature/components/` + `utils/`
 
-To disable Sentry in development:
-```env
-NEXT_PUBLIC_SENTRY_DISABLED="true"
+### Ny API-route
+1. Skapa: `src/app/api/ny-resurs/route.ts`
+2. Följ befintligt mönster: auth → createClient → query → response
+3. Admin-skydd med `isAdmin()`-helper om nödvändigt
+
+### Ny databastyp
+1. Lägg till interface i `src/types/database.ts`
+2. Lägg till i `Database.public.Tables`
+3. Lägg till collection-mapping i `lib/appwrite/server.ts` → `COLLECTIONS`
+
+### Ny shadcn-komponent
+```bash
+npx shadcn add <komponent>
 ```
 
-### Error Boundaries
-- `global-error.tsx` - Catches all errors, reports to Sentry
-- Parallel route `error.tsx` files for specific sections
+### Nytt tema
+1. Skapa `src/styles/themes/mitt-tema.css` med `[data-theme='mitt-tema']`
+2. Importera i `src/styles/theme.css`
+3. Lägg till i `THEMES` i `src/components/themes/theme.config.ts`
 
 ---
 
-## Testing Strategy
+## 12. Kända tillstånd & begränsningar
 
-**Note**: This project does not include a test suite by default. Consider adding:
+### Delvis implementerat
+- **Dashboard overview**: Visar mockdata-grafer, inte live-data från Appwrite
+- **Products/Student-tabell**: Använder `fakeProducts` mock-API, bör kopplas mot `/api/students`
+- **Kanban**: Funktionell drag-and-drop men använder lokal Zustand-store, ej persisterat
+- **Profil**: Clerk-hanterad, ingen koppling till `profiles`-collection i UI
+- **AI Chatbot**: Fungerar med NVIDIA eller keyword-fallback
 
-- **Unit tests**: Vitest or Jest for utilities and hooks
-- **Component tests**: React Testing Library for UI components
-- **E2E tests**: Playwright for critical user flows
+### Saknas helt (planerat i planfil.md)
+- Roll-specifika dashboards (student/company/school-views)
+- Meddelandesystem (konversationer, realtime)
+- Notifikationssystem
+- Företags-dashboard (placements, applicants, analytics)
+- Skol-dashboard (classes, CSV-import UI, reports)
+- Student-dashboard (matches-lista, ansökningar)
+- Google Maps/kartor-integration
+- LinkedIn-integration
 
-Recommended test locations:
-```
-/src
-  /__tests__           # Unit tests
-  /features/*/tests    # Feature tests
-/e2e                   # Playwright tests
-```
-
----
-
-## Deployment
-
-### Vercel (Recommended)
-1. Connect repository to Vercel
-2. Add environment variables in dashboard
-3. Deploy
-
-### Environment Variables for Production
-Ensure these are set in your deployment platform:
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
-- All `NEXT_PUBLIC_*` variables for client-side access
-- `SENTRY_*` variables if using error tracking
-
-### Build Considerations
-- Output: Static + Server (default Next.js)
-- Images: Configured for `api.slingacademy.com`, `img.clerk.com`, `clerk.com`
-- Sentry source maps uploaded automatically in CI
+### Legacy-namngivning
+- `/dashboard/product/` → avser "Studenter" (behåller routes av kompatibilitetsskäl)
+- `features/products/` → student-tabellkomponenter
+- `mock-api.ts` → `fakeProducts` = mock-studenter, inte produkter
+- `recentSalesData` → alias för `recentMatchesData`
 
 ---
 
-## Feature Cleanup System
-
-The `__CLEANUP__` folder contains scripts to remove optional features:
+## 13. Utvecklingskommandon
 
 ```bash
-# List available features
-node __CLEANUP__/scripts/cleanup.js --list
+# Installera beroenden
+bun install          # eller npm install
 
-# Remove specific features
-node __CLEANUP__/scripts/cleanup.js clerk    # Remove auth/org/billing
-node __CLEANUP__/scripts/cleanup.js kanban   # Remove kanban board
-node __CLEANUP__/scripts/cleanup.js sentry   # Remove error tracking
+# Starta dev
+bun run dev          # → http://localhost:3000
+
+# Bygg
+bun run build
+
+# Lint & format
+bun run lint         # ESLint
+bun run lint:fix     # ESLint fix + format
+bun run format       # Prettier
+
+# Appwrite setup
+npx tsx scripts/setup-appwrite.ts
 ```
 
-**Safety**: Script requires git repository with at least one commit. Use `--force` to skip.
+---
 
-After cleanup, delete the `__CLEANUP__` folder.
+## 14. Checklista vid kodändringar
+
+- [ ] Typerna i `src/types/database.ts` matchar Appwrite-collections
+- [ ] Ny collection? Lägg till i `COLLECTIONS` i `lib/appwrite/server.ts`
+- [ ] Ny navigation? Uppdatera `src/config/nav-config.ts` med rätt `access`
+- [ ] API-route? Auth-check + roll-check + felhantering
+- [ ] Formulär? Zod-schema + React Hook Form
+- [ ] UI-text? Svenska
+- [ ] Klassnamn? `cn()` — inte string-concat
+- [ ] Server component? Ta inte in `'use client'` i onödan
+- [ ] Ingen `any`
+- [ ] Kör `bun run lint` innan commit
 
 ---
 
-## Common Development Tasks
+## 15. Guiding principles
 
-### Adding a New Page
-1. Create route: `src/app/dashboard/new-page/page.tsx`
-2. Add navigation item in `src/config/nav-config.ts`
-3. Create feature components in `src/features/new-feature/`
-
-### Adding a New API Route
-1. Create: `src/app/api/my-route/route.ts`
-2. Export HTTP method handlers: `GET`, `POST`, etc.
-
-### Adding a shadcn Component
-```bash
-npx shadcn add component-name
-```
-
-### Adding a New Theme
-See "Theming System" section above or `docs/themes.md`.
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-**Build fails with Tailwind errors**
-- Ensure using Tailwind CSS v4 syntax (`@import 'tailwindcss'`)
-- Check `postcss.config.js` uses `@tailwindcss/postcss`
-
-**Clerk keyless mode popup**
-- Normal in development without API keys
-- Click popup to claim application or set env variables
-
-**Theme not applying**
-- Check theme name matches in CSS `[data-theme]` and `theme.config.ts`
-- Verify theme CSS is imported in `theme.css`
-
-**Navigation items not showing**
-- Check `access` property in nav config
-- Verify user has required org/permission/role
-
----
-
-## External Documentation
-
-- [Next.js App Router](https://nextjs.org/docs/app)
-- [Clerk Next.js SDK](https://clerk.com/docs/references/nextjs)
-- [shadcn/ui](https://ui.shadcn.com/docs)
-- [Tailwind CSS v4](https://tailwindcss.com/docs)
-- [TanStack Table](https://tanstack.com/table/latest)
-- [Sentry Next.js](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
-
----
-
-## Notes for AI Agents
-
-1. **Always use `cn()` for className merging** - never concatenate strings manually
-2. **Respect the feature-based structure** - put new feature code in `src/features/`
-3. **Server components by default** - only add `'use client'` when using browser APIs or React hooks
-4. **Type safety first** - avoid `any`, prefer explicit types
-5. **Follow existing patterns** - look at similar components before creating new ones
-6. **Environment variables** - prefix with `NEXT_PUBLIC_` for client-side access
-7. **shadcn components** - don't modify files in `src/components/ui/` directly; extend them instead
+1. **Följ befintliga mönster** — titta på liknande filer innan du skapar nya
+2. **Feature-baserad struktur** — all ny affärslogik i `src/features/`
+3. **Server-first** — server components som default, client bara vid behov
+4. **Typsäkerhet** — explicit types, inget `any`, validera med Zod
+5. **Supabase-kompatibelt** — alla DB-queries via `createClient()` → `.from()` kedja
+6. **RBAC** — server-side auth i API-routes, client-side i navigation
+7. **Svenska UI** — all synlig text, knappar, labels, errors på svenska
+8. **Extenda, inte modifiera** — `src/components/ui/` ändras inte
+9. **Enkel felhantering** — try/catch i varje API-route, tydliga error-responses
+10. **Mockdata → live** — gradvis ersätta `fakeProducts`/`recentSalesData` med Appwrite-data

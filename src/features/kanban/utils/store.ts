@@ -9,7 +9,7 @@ export type Status = 'TODO' | 'IN_PROGRESS' | 'DONE';
 const defaultCols = [
   {
     id: 'TODO' as const,
-    title: 'Todo'
+    title: 'Väntande'
   }
 ] satisfies Column[];
 
@@ -32,12 +32,12 @@ const initialTasks: Task[] = [
   {
     id: 'task1',
     status: 'TODO',
-    title: 'Project initiation and planning'
+    title: 'Emma Andersson → TechStart AB'
   },
   {
     id: 'task2',
     status: 'TODO',
-    title: 'Gather requirements from stakeholders'
+    title: 'Oscar Johansson → Digital Solutions'
   }
 ];
 

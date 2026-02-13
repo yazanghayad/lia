@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { fontVariables } from '@/components/themes/font.config';
 import { DEFAULT_THEME } from '@/components/themes/theme.config';
 import ThemeProvider from '@/components/themes/theme-provider';
+import { HideClerkBanner } from '@/components/hide-clerk-banner';
 import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
@@ -16,8 +17,8 @@ const META_THEME_COLORS = {
 };
 
 export const metadata: Metadata = {
-  title: 'Next Shadcn',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: 'PraktikFinder',
+  description: 'Matchning av praktikplatser för studenter och företag'
 };
 
 export const viewport: Viewport = {
@@ -48,6 +49,12 @@ export default async function RootLayout({
             `
           }}
         />
+        {/* Hide Clerk keyless-mode banner via CSS only (no DOM removal to avoid React hydration conflicts) */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `body > div[style*="position: fixed"][style*="bottom"], body > div[style*="z-index: 2147483647"] { display: none !important; visibility: hidden !important; height: 0 !important; pointer-events: none !important; }`
+          }}
+        />
       </head>
       <body
         className={cn(
@@ -66,6 +73,7 @@ export default async function RootLayout({
           >
             <Providers activeThemeValue={themeToApply}>
               <Toaster />
+              <HideClerkBanner />
               {children}
             </Providers>
           </ThemeProvider>

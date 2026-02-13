@@ -22,7 +22,26 @@ const baseConfig: NextConfig = {
       }
     ]
   },
-  transpilePackages: ['geist']
+  transpilePackages: ['geist'],
+  // Allow Codespaces and other dev origins for Server Actions
+  allowedDevOrigins: [
+    'localhost',
+    'verbose-space-lamp-7v64vv79pgpwfrw6w-3000.app.github.dev',
+    'verbose-space-lamp-7v64vv79pgpwfrw6w-3001.app.github.dev',
+    'verbose-space-lamp-7v64vv79pgpwfrw6w-3002.app.github.dev'
+  ],
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        'localhost:3000',
+        'localhost:3001',
+        'localhost:3002',
+        'verbose-space-lamp-7v64vv79pgpwfrw6w-3000.app.github.dev',
+        'verbose-space-lamp-7v64vv79pgpwfrw6w-3001.app.github.dev',
+        'verbose-space-lamp-7v64vv79pgpwfrw6w-3002.app.github.dev'
+      ]
+    }
+  }
 };
 
 let configWithPlugins = baseConfig;

@@ -11,7 +11,7 @@ import { Suspense } from 'react';
 import { productInfoContent } from '@/config/infoconfig';
 
 export const metadata = {
-  title: 'Dashboard: Products'
+  title: 'Dashboard: Studenter'
 };
 
 type pageProps = {
@@ -29,15 +29,15 @@ export default async function Page(props: pageProps) {
   return (
     <PageContainer
       scrollable={false}
-      pageTitle='Products'
-      pageDescription='Manage products (Server side table functionalities.)'
+      pageTitle='Studenter'
+      pageDescription='Hantera studenter som söker praktik.'
       infoContent={productInfoContent}
       pageHeaderAction={
         <Link
           href='/dashboard/product/new'
           className={cn(buttonVariants(), 'text-xs md:text-sm')}
         >
-          <IconPlus className='mr-2 h-4 w-4' /> Add New
+          <IconPlus className='mr-2 h-4 w-4' /> Lägg till
         </Link>
       }
     >

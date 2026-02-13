@@ -6,42 +6,48 @@ import {
   CardTitle,
   CardDescription
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
-const salesData = [
+const matchesData = [
   {
-    name: 'Olivia Martin',
-    email: 'olivia.martin@email.com',
+    studentName: 'Emma Andersson',
+    companyName: 'TechStart AB',
     avatar: 'https://api.slingacademy.com/public/sample-users/1.png',
-    fallback: 'OM',
-    amount: '+$1,999.00'
+    fallback: 'EA',
+    status: 'Accepterad',
+    variant: 'default' as const
   },
   {
-    name: 'Jackson Lee',
-    email: 'jackson.lee@email.com',
+    studentName: 'Oscar Johansson',
+    companyName: 'Digital Solutions',
     avatar: 'https://api.slingacademy.com/public/sample-users/2.png',
-    fallback: 'JL',
-    amount: '+$39.00'
+    fallback: 'OJ',
+    status: 'Väntande',
+    variant: 'secondary' as const
   },
   {
-    name: 'Isabella Nguyen',
-    email: 'isabella.nguyen@email.com',
+    studentName: 'Maja Lindqvist',
+    companyName: 'Kreativ Byrå',
     avatar: 'https://api.slingacademy.com/public/sample-users/3.png',
-    fallback: 'IN',
-    amount: '+$299.00'
+    fallback: 'ML',
+    status: 'Intresserad',
+    variant: 'outline' as const
   },
   {
-    name: 'William Kim',
-    email: 'will@email.com',
+    studentName: 'Liam Svensson',
+    companyName: 'Lokalbutiken AB',
     avatar: 'https://api.slingacademy.com/public/sample-users/4.png',
-    fallback: 'WK',
-    amount: '+$99.00'
+    fallback: 'LS',
+    status: 'Placerad',
+    variant: 'default' as const
   },
   {
-    name: 'Sofia Davis',
-    email: 'sofia.davis@email.com',
+    studentName: 'Ella Bergström',
+    companyName: 'Vården Klinik',
     avatar: 'https://api.slingacademy.com/public/sample-users/5.png',
-    fallback: 'SD',
-    amount: '+$39.00'
+    fallback: 'EB',
+    status: 'Avslutad',
+    variant: 'secondary' as const
   }
 ];
 
@@ -49,22 +55,28 @@ export function RecentSales() {
   return (
     <Card className='h-full'>
       <CardHeader>
-        <CardTitle>Recent Sales</CardTitle>
-        <CardDescription>You made 265 sales this month.</CardDescription>
+        <CardTitle>Senaste matchningar</CardTitle>
+        <CardDescription>32 nya matchningar denna månad.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className='space-y-8'>
-          {salesData.map((sale, index) => (
+          {matchesData.map((match, index) => (
             <div key={index} className='flex items-center'>
               <Avatar className='h-9 w-9'>
-                <AvatarImage src={sale.avatar} alt='Avatar' />
-                <AvatarFallback>{sale.fallback}</AvatarFallback>
+                <AvatarImage src={match.avatar} alt='Avatar' />
+                <AvatarFallback>{match.fallback}</AvatarFallback>
               </Avatar>
               <div className='ml-4 space-y-1'>
-                <p className='text-sm leading-none font-medium'>{sale.name}</p>
-                <p className='text-muted-foreground text-sm'>{sale.email}</p>
+                <p className='text-sm leading-none font-medium'>
+                  {match.studentName}
+                </p>
+                <p className='text-muted-foreground text-sm'>
+                  {match.companyName}
+                </p>
               </div>
-              <div className='ml-auto font-medium'>{sale.amount}</div>
+              <div className='ml-auto'>
+                <Badge variant={match.variant}>{match.status}</Badge>
+              </div>
             </div>
           ))}
         </div>

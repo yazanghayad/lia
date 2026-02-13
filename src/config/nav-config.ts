@@ -34,7 +34,7 @@ import { NavItem } from '@/types';
  */
 export const navItems: NavItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Översikt',
     url: '/dashboard/overview',
     icon: 'dashboard',
     isActive: false,
@@ -42,77 +42,58 @@ export const navItems: NavItem[] = [
     items: []
   },
   {
-    title: 'Workspaces',
-    url: '/dashboard/workspaces',
+    title: 'Studenter',
+    url: '/dashboard/product',
+    icon: 'profile',
+    isActive: false,
+    shortcut: ['s', 's'],
+    items: []
+  },
+  {
+    title: 'Företag',
+    url: '/dashboard/companies',
     icon: 'workspace',
     isActive: false,
+    shortcut: ['f', 'f'],
     items: []
   },
   {
-    title: 'Teams',
-    url: '/dashboard/workspaces/team',
+    title: 'Skolor',
+    url: '/dashboard/schools',
     icon: 'teams',
     isActive: false,
-    items: [],
-    // Require organization to be active
-    access: { requireOrg: true }
-    // Alternative: require specific permission
-    // access: { requireOrg: true, permission: 'org:teams:view' }
-  },
-  {
-    title: 'Product',
-    url: '/dashboard/product',
-    icon: 'product',
-    shortcut: ['p', 'p'],
-    isActive: false,
+    shortcut: ['k', 'k'],
     items: []
   },
   {
-    title: 'Kanban',
+    title: 'Matchningar',
     url: '/dashboard/kanban',
     icon: 'kanban',
-    shortcut: ['k', 'k'],
+    shortcut: ['m', 'm'],
     isActive: false,
     items: []
   },
   {
-    title: 'Pro',
-    url: '#', // Placeholder as there is no direct link for the parent
-    icon: 'pro',
-    isActive: true,
-    items: [
-      {
-        title: 'Exclusive',
-        url: '/dashboard/exclusive',
-        icon: 'exclusive',
-        shortcut: ['m', 'm']
-      }
-    ]
-  },
-  {
-    title: 'Account',
-    url: '#', // Placeholder as there is no direct link for the parent
+    title: 'Konto',
+    url: '#',
     icon: 'account',
     isActive: true,
     items: [
       {
-        title: 'Profile',
+        title: 'Profil',
         url: '/dashboard/profile',
         icon: 'profile',
-        shortcut: ['m', 'm']
+        shortcut: ['p', 'p']
       },
       {
-        title: 'Billing',
+        title: 'Fakturering',
         url: '/dashboard/billing',
         icon: 'billing',
         shortcut: ['b', 'b'],
-        // Only show billing if in organization context
         access: { requireOrg: true }
-        // Alternative: require billing management permission
-        // access: { requireOrg: true, permission: 'org:manage:billing' }
       },
       {
-        title: 'Login',
+        title: 'Logga ut',
         shortcut: ['l', 'l'],
         url: '/',
         icon: 'login'

@@ -22,6 +22,8 @@ export default function Providers({
           appearance={{
             baseTheme: resolvedTheme === 'dark' ? dark : undefined
           }}
+          telemetry={false}
+          showDdsBanner={false}
         >
           {children}
         </ClerkProvider>
